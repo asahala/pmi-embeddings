@@ -28,6 +28,8 @@ Word2vec compatible raw text word vectors.
 ### Parameters and usage
 Run the script from the commmand line ```python3 make_vectors.py corpusfile vectorfile [parameters]```. See this [document](https://docs.google.com/document/d/1TjVWqrhalCDjkOQf-JLk1jmC6N83MWGUIEVjbJpm9Es) for detailed information about the parameters. 
 
+## Todo
++ Clean and dirty stopword handling
 
 
 
