@@ -1,5 +1,5 @@
 # pmi-embeddings
-State-of-the-art count-based word embeddings for low-resource languages with a special focus on historical langauges, such as Sumerian and Akkadian.
+State-of-the-art count-based word embeddings for low-resource languages with a special focus on historical languages, especially Akkadian and Sumerian.
 
 1. ```src/make_vectors.py``` creates PMI-based word embeddings from the source corpus.
 2. ```src/hypertune.py``` tests hyperparameters (by using brute force) to find the best settings for the given data set (requires a gold standard).
@@ -10,7 +10,7 @@ State-of-the-art count-based word embeddings for low-resource languages with a s
 ```Python 3.6``` or newer, [numpy](https://numpy.org/), [scipy](https://www.scipy.org/) and [sklearn](https://scikit-learn.org/stable/). For evaluation scripts you will also need [gensim](https://pypi.org/project/gensim/). Tested in Linux and Windows 7/10.
 
 ## Features
-```make_vectors.py``` is a fast and efficient way to build PMI-based word embeddings from small (a few million words) text corpora. It implements findings from several research papers:
+```make_vectors.py``` is a fast and efficient way to build PMI-based word embeddings from small (a few million words) text corpora. It combines findings from several research papers:
 
 + Dirichlet Smoothing (Jungmaier et al. 2020)
 + Context Similarity Weighting (Sahala & Linden 2020)
