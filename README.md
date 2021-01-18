@@ -4,7 +4,7 @@ State-of-the-art count-based word embeddings for low-resource languages with a s
 1. ```src/make_vectors.py``` creates PMI-based word embeddings from the source corpus.
 2. ```src/hypertune.py``` tests hyperparameters (by using brute force) to find the best settings for the given data set (requires a gold standard).
 3. ```corpora/akkadian.zip``` a zipped test corpora of Akkadian language.
-3. ```eval/gold.tsv``` an initial version of the Akkadian [gold standard](https://www.helsinki.fi/en/news/language-culture/creating-a-gold-standard-for-akkadian-word-embeddings).
+3. ```eval/gold.tsv``` an initial version of the [Akkadian gold standard](https://www.helsinki.fi/en/news/language-culture/creating-a-gold-standard-for-akkadian-word-embeddings).
 
 ## Requirements
 ```Python 3.6``` or newer, [numpy](https://numpy.org/), [scipy](https://www.scipy.org/) and [sklearn](https://scikit-learn.org/stable/). For evaluation scripts you will also need [gensim](https://pypi.org/project/gensim/).
