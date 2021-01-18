@@ -7,7 +7,7 @@ State-of-the-art count-based word embeddings for low-resource languages with a s
 3. ```eval/gold.tsv``` an initial version of the [Akkadian gold standard](https://www.helsinki.fi/en/news/language-culture/creating-a-gold-standard-for-akkadian-word-embeddings).
 
 ## Requirements
-```Python 3.6``` or newer, [numpy](https://numpy.org/), [scipy](https://www.scipy.org/) and [sklearn](https://scikit-learn.org/stable/). For evaluation scripts you will also need [gensim](https://pypi.org/project/gensim/). Tested in Linux and Windows 7/10.
+```Python 3.6``` or newer, [numpy](https://numpy.org/), [scipy](https://www.scipy.org/) and [sklearn](https://scikit-learn.org/stable/). For evaluation scripts you will also need [gensim](https://pypi.org/project/gensim/). Tested on Linux and Windows 7/10.
 
 ## Features
 ```make_vectors.py``` is a fast and efficient way to build PMI-based word embeddings from small (a few million words) text corpora. It combines findings from several research papers:
