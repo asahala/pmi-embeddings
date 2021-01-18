@@ -226,7 +226,7 @@ class Cooc:
 
     def __init__(self, filename, chunksize=400000, dynamic_window=False,
                  min_count=1, subsampling_rate=0.0, window_size=5,
-                 k_factor=3, window_scaling=False, verbose=True):
+                 k_factor=0, window_scaling=False, verbose=True):
 
         """ 
         :param filename            input file
@@ -633,6 +633,8 @@ class Cooc:
         
         Adapted from Jungmaier 
         htps://github.com/jungmaier/dirichlet-smoothed-word-embeddings """
+        
+        st = time.time()
 
         # Do not modify pmi_matrix directly
         m = self.pmi_matrix
@@ -657,10 +659,17 @@ class Cooc:
         self.svd_matrix = normalize(m, norm='l2', axis=1, copy=False)
         del m
 
+        et = time.time() - st
+        self.time += et
+
+        if self.verbose:
+            print('    (%.2f seconds)' % (et))
+            print(DIV)
+
 
 def save_word_vectors(file_name, embeddings):
     
-    """ Adapted from Jungmaier
+    """ Adapted and made Windows compatible from Jungmaier
        https://github.com/jungmaier/dirichlet-smoothed-word-embeddings
                                                  (Accessed: 2020-12-01)
     
@@ -683,7 +692,7 @@ def save_word_vectors(file_name, embeddings):
         print("> Saving word vectors for {} most frequent words:"
               .format(len(vocab)))
 
-    with open(file_name, "w") as vector_file:
+    with open(file_name, "w", encoding="utf-8") as vector_file:
         vector_file.write(str(word_vector_matrix.shape[0]) + " "
                           + str(word_vector_matrix.shape[1]) + "\n")
 
@@ -734,7 +743,7 @@ if __name__ == "__main__":
                         help='Scale co-oc by window size')
     parser.add_argument('--dynamic_window', action='store_true', default=False,
                         help='Dynamic Window as in GloVE and Word2vec')
-    parser.add_argument('--k_value', '-k', type=float, default=3.0,
+    parser.add_argument('--k_value', '-k', type=float, default=0.0,
                         help='CSW k-value')
     parser.add_argument('--min_count', '-m', type=int, default=1,
                         help='Minimal word count for words to process, \
