@@ -35,6 +35,6 @@ On Intel i5-2400 3.10GHz using a corpus of 1M words and a window size of 3, take
 
 ## Todo
 + Clean and dirty stopword handling
-
++ Add corpus pre-processing scripts
 
 
