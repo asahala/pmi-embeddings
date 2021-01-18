@@ -16,6 +16,8 @@ from sklearn.utils.extmath import randomized_svd
 from sklearn.decomposition import TruncatedSVD
 from sklearn.preprocessing import normalize
 
+__version__ = "2021-18-01 16:15"
+
 # Globals
 PADDING = "#"
 LACUNA = "_"
@@ -187,7 +189,7 @@ class CSW:
             return sum(prop_vector) / len(prop_vector)
 
 
-    def compute(self, dim, k_factor=2, verbose=False):
+    def compute(self, dim, k_factor=0, verbose=False):
         """ Returns Context similarity Weights as a sparse
         matrix 
 
