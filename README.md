@@ -1,7 +1,7 @@
 # pmi-embeddings
 State-of-the-art count-based word embeddings for low-resource languages with a special focus on historical languages, especially Akkadian and Sumerian.
 
-1. ```src/make_vectors.py``` creates PMI-based word embeddings from the source corpus.
+1. ```src/make_embeddings.py``` creates PMI-based word vectors from the source corpus.
 2. ```src/hypertune.py``` tests hyperparameters (by using brute force) to find the best settings for the given data set (requires a gold standard).
 3. ```corpora/extract_corpus.py``` a script for extracting sense-disambiguated corpora from Korp-Oracc VRT files.
 4. ```corpora/akkadian.zip``` a zipped test corpora of Akkadian language.
