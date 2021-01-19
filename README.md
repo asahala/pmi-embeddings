@@ -32,11 +32,10 @@ Word2vec compatible raw text word vectors.
 Run the script from the commmand line ```python3 make_vectors.py corpusfile vectorfile [parameters]```. See [this document](https://docs.google.com/document/d/1TjVWqrhalCDjkOQf-JLk1jmC6N83MWGUIEVjbJpm9Es) for detailed information about the parameters and references. 
 
 ### Performance
-On Intel i5-2400 3.10GHz using a corpus of 1M words and a window size of 3, takes ca. 35 seconds to make basic embeddings and 50 seconds to make CSW-embeddings. Although this is quite fast, it is good to keep in mind when using ```hypertune.py```.
+On Intel i5-2400 3.10GHz using a corpus of 1M words and a window size of 3, takes ca. 35 seconds to make basic embeddings and 50 seconds to make CSW-embeddings. Although this is quite fast testing hundreds of combinations using ```hypertune.py``` may take a while.
 
 ## Todo
 + Clean and dirty stopword handling
-+ Add corpus pre-processing scripts
 + Jypyter API
 
 
