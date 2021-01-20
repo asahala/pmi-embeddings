@@ -16,13 +16,13 @@ For those who like to use Jupyter Notebooks, ```src/jupyter_embeddings.ipynb``` 
 ## Features
 ```make_embeddings.py``` is a fast and efficient way to build PMI-based word embeddings from small (a few million words) text corpora. It combines findings from several research papers:
 
-+ Dirichlet Smoothing (Jungmaier et al. 2020)
++ Dirichlet Smoothing (Turney & Pantel 2010; Jungmaier et al. 2020)
 + Context Similarity Weighting (Sahala & Linden 2020)
-+ Shifted PMI (Levy et al. 2015) with experimental variants
++ Shifted PMI (Levy et al. 2015) with different variants
 + Dynamic Context Windows (Sahlgren 2006)
 + Subsampling (Mikolov et al. 2013)
 + Context Distribution Smoothing (Levy et al. 2015)
-+ Eigenvalue Weighting (Caron 2001)
++ Eigenvalue Weighting (Caron 2001; Levy et al. 2015)
 + Dirty and clean stopwords (Levy et al. 2015)
 
 ### Input format
