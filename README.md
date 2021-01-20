@@ -1,5 +1,5 @@
 # pmi-embeddings
-State-of-the-art count-based word embeddings for low-resource languages with a special focus on historical languages, especially Akkadian and Sumerian.
+State-of-the-art count-based word vectors for low-resource languages with a special focus on historical languages, especially Akkadian and Sumerian.
 
 1. ```src/make_embeddings.py``` creates PMI-based word vectors from the source corpus.
 2. ```src/hypertune.py``` tests hyperparameters (by using brute force) to find the best settings for the given data set (requires a gold standard).
@@ -32,7 +32,7 @@ Lemmatized UTF-8 encoded text one word per line. Use symbol ´#´ to set window 
 Word2vec compatible raw text word vectors.
 
 ### Parameters and usage
-Run the script from the commmand line ```python3 make_vectors.py corpusfile vectorfile [parameters]```. See [this document](https://docs.google.com/document/d/1TjVWqrhalCDjkOQf-JLk1jmC6N83MWGUIEVjbJpm9Es) for detailed information about the parameters and references. 
+Run script from the commmand line ```python3 make_embeddings.py corpusfile vectorfile [parameters]```. See [this document](https://docs.google.com/document/d/1TjVWqrhalCDjkOQf-JLk1jmC6N83MWGUIEVjbJpm9Es) for detailed information about the parameters and references. 
 
 ### Performance
 On Intel i5-2400 3.10GHz using a corpus of 1M words and a window size of 3, takes ca. 35 seconds to make basic embeddings and 50 seconds to make CSW-embeddings. Although this is quite fast, testing hundreds of combinations using ```hypertune.py``` may take a while.
