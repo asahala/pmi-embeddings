@@ -80,7 +80,7 @@ BYFREQ = 'lex/oracc_by_freq.gz'
 def write(filename, content):
     print('> Writing %s...' % filename)
     with open(filename, 'w', encoding='utf-8') as data:
-        data.write(content.replace(' \n ', '\n'))
+        data.write(content)
 
 def make_dictionary(dictionary, outfile):
     print('> Compiling dictionary...')
@@ -154,6 +154,8 @@ def openvrt(filename, projects):
                     key = "%s[%s]" % (lemma, translation)
                     disamb_lemma = map_ebl.get(
                         key, map_base.get(key, lemma + '_?'))
+                    """ Kill spaces """
+                    disamb_lemma = disamb_lemma.replace(' ', '&&')
                     output.append(disamb_lemma)
                     dictionary[disamb_lemma].append(translation)
                 else:
@@ -161,7 +163,7 @@ def openvrt(filename, projects):
                     if lemma == '_' or FLATTEN_STOPS:
                         output.append(lemma)
                     else:
-                        output.append('<%s>' % lemma)
+                        output.append('<stop>')
                     
             if line.startswith('</text') and getdata:
                 output.append('\n')
