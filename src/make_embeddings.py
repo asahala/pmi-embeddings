@@ -16,12 +16,12 @@ from sklearn.utils.extmath import randomized_svd
 from sklearn.decomposition import TruncatedSVD
 from sklearn.preprocessing import normalize
 
-__version__ = "2021-18-01 16:15"
+__version__ = "2021-01-20"
 
 # Globals
 PADDING = "#"
 LACUNA = "_"
-STOP = "<STOP>"
+STOP = "<stop>"
 
 # Pretty print dividers 
 DIV = "> " + "--" * 16
@@ -53,7 +53,6 @@ DIV = "> " + "--" * 16
    Word2vec compatible raw text word vector files.
 
  TODO:
-  - Handle stopwords and lacunae differently from each other
   - Asymmetric co-occurrences for stopwords
 
  Credits:
@@ -124,17 +123,7 @@ class CSW:
 
     @property
     def size(self):
-        #a = sum(len(v) for k, v in self.context_lookup.items())\
-        #    + sum(len(c) for c in self.contexts)\
-        #    + len(self.context_lookup.keys())
-        x = max(self.context_lookup.values(), key=len)
-        print(len(self.context_lookup.keys()), 'keys')
-        print(len(self.contexts), len(set(self.contexts)), 'conts')
-        print(len(x))
-        print(len(set(x)))
-        #print(self.context_lookup.keys())
-        print(self.context_lookup[(43, 653)], '\n', self.context_lookup[(653, 43)])
-        return 1#get_size(self.contexts) + get_size(self.context_lookup)
+        return get_size(self.contexts) + get_size(self.context_lookup)
 
         
     def add_lookup(self, bigram, id_, discard):
@@ -226,7 +215,8 @@ class Cooc:
 
     def __init__(self, filename, chunksize=400000, dynamic_window=False,
                  min_count=1, subsampling_rate=0.0, window_size=5,
-                 k_factor=0, window_scaling=False, verbose=True):
+                 k_factor=0, window_scaling=False, dirty_stopwords=False,
+                 verbose=True):
 
         """ 
         :param filename            input file
@@ -259,6 +249,7 @@ class Cooc:
         self.window_size = window_size
         self.window_scaling = window_scaling
         self.csw = self.k_factor > 0
+        self.dirty_stopwords = dirty_stopwords
 
         self.rand = random.Random(0)
         self.word_count = defaultdict(int)
@@ -311,10 +302,18 @@ class Cooc:
                 i += 1
                 if word != PADDING:
                     if only_vocab:
-                        """ Ignore rare words completely if mincount is set;
-                        Levy et al. (2015) call this the dirty method """
-                        if word in self.vocabulary_set:
-                            span.append(self.word_to_id[word])
+                        if self.dirty_stopwords:
+                            """ If dirty stop words, remove all not-allowed
+                            words from the corpus as in Levy et al. 2015"""
+                            if word == STOP:
+                                pass
+                            elif word in self.vocabulary_set:
+                                span.append(self.word_to_id[word])
+                        else:
+                            """ If clean stop words, add as they are
+                            and replace non-vocabulary items with -1"""
+                            if word in self.vocabulary_set:
+                                span.append(self.word_to_id[word])
                     else:
                         span.append(word)
                 else:
@@ -363,7 +362,7 @@ class Cooc:
         representing the vocabulary as sparse matrix row and column indices
         and saves some memory in CSW """
         self.word_to_id = {w: i for i, w in
-                           enumerate(self.vocabulary) if w != LACUNA}
+                        enumerate(self.vocabulary) if w not in (LACUNA, STOP)}
 
         """ Give negative index for all meta symbols """
         self.word_to_id[STOP] = -2
@@ -458,7 +457,7 @@ class Cooc:
         self.time += et
 
         if self.verbose:
-            print(">   (%.2f seconds)" % (et))
+            print("    (%.2f seconds)" % (et))
             print(DIV)
             print("> Extracting bigrams...")
         i = 1
@@ -527,7 +526,7 @@ class Cooc:
             if self.verbose:
                 print('    (%.2f seconds)' % (et))
                 print(DIV)
-                # getting the size of the lookup is very slow
+                # getting the size of the lookup is very slow, only for debugging
                 #print(self.context_weights.size)
             del self.context_weights
 
@@ -637,27 +636,36 @@ class Cooc:
         st = time.time()
 
         # Do not modify pmi_matrix directly
-        m = self.pmi_matrix
+        matrix = self.pmi_matrix
 
         if self.verbose:
-            print("> SVD...", end="\r")
+            print("> SVD...")
+        
         if eigenvalue_weighting == 1:
+            """ Traditional SVD """
             svd = TruncatedSVD(n_components=dimensions, random_state=0)
-            m = svd.fit_transform(m)
-        elif eigenvalue_weighting == 0:
-            m, _, _ = randomized_svd(m, n_components=dimensions,
-                                 random_state=0)
+            matrix = svd.fit_transform(matrix)
+        elif not eigenvalue_weighting:
+            """ Ignore diagonal matrix. Improves performance """
+            matrix, _, _ = randomized_svd(matrix,
+                                     n_components=dimensions,
+                                     random_state=0)
         else:
-            m, s, _ = randomized_svd(m, n_components=dimensions,
-                                 random_state=0)
-            sigma = np.zeros((m.shape[0], m.shape[1]))
-            sigma = np.diag(s**eigenvalue_weighting)
-            m = m.dot(sigma)
+            """ Weight diagonal matrix """
+            matrix, s, _ = randomized_svd(matrix, 
+                                     n_components=dimensions,
+                                     random_state=0)
+            sigma = np.zeros((matrix.shape[0], matrix.shape[1]))
+            sigma = np.diag(s ** eigenvalue_weighting)
+            matrix = matrix.dot(sigma)
 
         if self.verbose:
-            print("> Normalizing vectors...", end="\r")
-        self.svd_matrix = normalize(m, norm='l2', axis=1, copy=False)
-        del m
+            print("> Normalizing vectors...")
+
+        """ Normalize vectors to unit length; reported to increase
+        performance in Levy et al 2015 and Wilson and Schakel 2015 """
+        self.svd_matrix = normalize(matrix, norm='l2', axis=1, copy=False)
+        del matrix
 
         et = time.time() - st
         self.time += et
@@ -667,53 +675,33 @@ class Cooc:
             print(DIV)
 
 
-def save_word_vectors(file_name, embeddings):
-    
-    """ Adapted and made Windows compatible from Jungmaier
-       https://github.com/jungmaier/dirichlet-smoothed-word-embeddings
-                                                 (Accessed: 2020-12-01)
-    
-    Saves word vectors from a word vector matrix to a text file 
-    in word2vec rawtext format.
+    def save_vectors(self, file_name):
+        
+        """ Saves word vectors from a word vector matrix to a text file 
+        in word2vec rawtext format.
 
-    :param file_name              vector file name
-    :param embeddings             embeddings object
+        :param file_name              vector file name
+        :type file_name               str                           """
 
-    :type file_name               str
-    :type embeddings              Cooc() """
+        st = time.time()
 
-    word_to_id = embeddings.word_to_id
-    vocab = word_to_id.keys()
-    verbose = embeddings.verbose
-    word_vector_matrix = embeddings.svd_matrix
+        if self.verbose:
+            print("> Saving %i word vectors... " % len(self.vocabulary))
 
-    st = time.time()
-    if verbose:
-        print("> Saving word vectors for {} most frequent words:"
-              .format(len(vocab)))
+        with open(file_name, "w", encoding="utf-8") as vector_file:
+            """ Vector file header """
+            vector_file.write("%i %i\n" % (self.svd_matrix.shape[0],
+                                           self.svd_matrix.shape[1]))
 
-    with open(file_name, "w", encoding="utf-8") as vector_file:
-        vector_file.write(str(word_vector_matrix.shape[0]) + " "
-                          + str(word_vector_matrix.shape[1]) + "\n")
+            for i, word in enumerate(self.vocabulary, start=1):
+                """ Vector data """
+                vector = map(str, self.svd_matrix[self.word_to_id[word], :])
+                vector_file.write(word + " " + " ".join(vector) + "\n")
 
-        for i, word in enumerate(vocab, start=1):
-            vector_file.write(word
-                              + " "
-                              + " ".join([str(value)
-                                          for value
-                                          in word_vector_matrix
-                                          [word_to_id[word], :]])
-                              + "\n")
-            if verbose:
-                if i % 1000 == 0:
-                    print("> {} of {} word vectors saved.".format(i, len(vocab)),
-                          end="\r")
-                elif i == len(vocab):
-                    et = time.time() - st
-                    print("> {} of {} word vectors saved."\
-                          .format(i, len(vocab)))
-                    print('    (%.2f seconds)' % (et))
-                    print(DIV)
+        if self.verbose:
+            et = time.time() - st
+            print('    (%.2f seconds)' % (et))
+            print(DIV)
 
 
 if __name__ == "__main__":
@@ -741,6 +729,8 @@ if __name__ == "__main__":
                         (if used, recommended α = 0.75)')
     parser.add_argument('--window_scaling', action='store_true', default=False,
                         help='Scale co-oc by window size')
+    parser.add_argument('--dirty_stopwords', action='store_true', default=False,
+                        help='Remove unwanted words without placeholders')
     parser.add_argument('--dynamic_window', action='store_true', default=False,
                         help='Dynamic Window as in GloVE and Word2vec')
     parser.add_argument('--k_value', '-k', type=float, default=0.0,
@@ -777,7 +767,6 @@ if __name__ == "__main__":
                         help='Verbose output.')
     args = parser.parse_args()
 
-
     print(args)
 
     """ Init embeddings object """
@@ -789,6 +778,7 @@ if __name__ == "__main__":
                       k_factor=args.k_value,
                       dynamic_window=args.dynamic_window,
                       window_scaling=args.window_scaling,
+                      dirty_stopwords=args.dirty_stopwords,
                       verbose=args.verbose)
 
     """ Make CSW and Cooc matrix """
@@ -805,5 +795,4 @@ if __name__ == "__main__":
                          eigenvalue_weighting=args.eigenvalue_weighting)
 
     """ Save word vectors from embeddings object """
-    save_word_vectors(file_name=args.word_vector_filename,
-                      embeddings=embeddings)
+    embeddings.save_vectors(file_name=args.word_vector_filename)

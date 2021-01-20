@@ -23,6 +23,7 @@ are separated to avoid re-reading the corpus when not necessary """
 parameter_grid = {'window_size': [1,2,3,4],
                   'subsampling_rate': [None],
                   'k_factor': [0,1,2,3],
+                  'dirty_stopwords': [False],
                   'dynamic_window': [False, True]}
 
 pmi_parameter_grid = {'shift_type': [0],
@@ -108,7 +109,7 @@ def test_model(corpus_file, chunksize, datasets, pmi_params, params, **kwargs):
         embs.calculate_pmi(**pmi_p)
         for dim in dimensions:
             embs.factorize(dim)
-            e.save_word_vectors(file_name='DELETEME.VEC', embeddings=embs) 
+            embs.save_vectors(file_name='DELETEME.VEC') 
             evaluate_model(datasets, params, pmi_p, dim)
 
 for i, p in enumerate(parameters):
