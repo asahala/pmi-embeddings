@@ -26,7 +26,7 @@ For those who like to use Jupyter Notebooks, ```src/jupyter_embeddings.ipynb``` 
 + Window Scaling (Church & Hanks 1990)
 
 ### Input format
-Lemmatized UTF-8 endoded text one word per line. Use symbol ´#´ to set window span constraints (i.e. text or paragraph boundaries) and ´_´ to indicate stop words and lacunae in cuneiform texts.
+Lemmatized UTF-8 endoded text one word per line. Use symbol ´#´ to set window span constraints (i.e. text or paragraph boundaries) and ´_´ to indicate lacunae (breakages in cuneiform text) and ´<stop>´ to indicate stop words.
 
 ### Output format
 Word2vec compatible raw text word vectors.
