@@ -7,6 +7,9 @@ State-of-the-art count-based word embeddings for low-resource languages with a s
 4. ```corpora/akkadian.zip``` a zipped test corpora of Akkadian language.
 5. ```eval/gold.tsv``` an initial version of the [Akkadian gold standard](https://www.helsinki.fi/en/news/language-culture/creating-a-gold-standard-for-akkadian-word-embeddings).
 
+## Jupyter tutorial
+For those who like to use Jupyter Notebooks, ```src/jupyter_embeddings.ipynb``` instructs how to build your own word embeddings with just a few lines of code. 
+
 ## Requirements
 ```Python 3.6``` or newer, [numpy](https://numpy.org/), [scipy](https://www.scipy.org/) and [sklearn](https://scikit-learn.org/stable/). For evaluation scripts you will also need [gensim](https://pypi.org/project/gensim/). Tested on Linux and Windows 7/10.
 
@@ -36,6 +39,4 @@ On Intel i5-2400 3.10GHz using a corpus of 1M words and a window size of 3, take
 
 ## Todo
 + Clean and dirty stopword handling
-+ Jypyter API
-
 
