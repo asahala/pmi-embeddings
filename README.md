@@ -23,7 +23,7 @@ For those who like to use Jupyter Notebooks, ```src/jupyter_embeddings.ipynb``` 
 + Subsampling (Mikolov et al. 2013)
 + Context Distribution Smoothing (Levy et al. 2015)
 + Eigenvalue Weighting (Caron 2001)
-+ Window Scaling (Church & Hanks 1990)
++ Dirty and clean stopwords (Levy et al. 2015)
 
 ### Input format
 Lemmatized UTF-8 encoded text one word per line. Use symbol ´#´ to set window span constraints (i.e. text or paragraph boundaries) and ´_´ to indicate lacunae (breakages in cuneiform text) and ´<stop>´ to indicate stop words.
