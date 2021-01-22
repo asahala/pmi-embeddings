@@ -683,10 +683,10 @@ class Cooc:
         :param file_name              vector file name
         :type file_name               str                           """
 
-        st = time.time()
-
         if self.verbose:
             print("> Saving %i word vectors... " % len(self.vocabulary))
+
+        st = time.time()
 
         with open(file_name, "w", encoding="utf-8") as vector_file:
             """ Vector file header """
@@ -694,9 +694,12 @@ class Cooc:
                                            self.svd_matrix.shape[1]))
 
             for i, word in enumerate(self.vocabulary, start=1):
-                """ Vector data """
-                vector = map(str, self.svd_matrix[self.word_to_id[word], :])
-                vector_file.write(word + " " + " ".join(vector) + "\n")
+                """ Save vectors in descending frequency order; make sure
+                that vectors will not contain meta-symbols (negative id) """
+                word_id = self.word_to_id[word]
+                if word_id >= 0:
+                    vector = map(str, self.svd_matrix[word_id, :])
+                    vector_file.write(word + " " + " ".join(vector) + "\n")
 
         if self.verbose:
             et = time.time() - st
