@@ -696,7 +696,7 @@ class Cooc:
             for i, word in enumerate(self.vocabulary, start=1):
                 #""" Save vectors in descending frequency order; make sure
                 #that vectors will not contain meta-symbols (negative id) """
-                #word_id = self.word_to_id[word]
+                word_id = self.word_to_id[word]
                 #if word_id >= 0:
                 vector = map(str, self.svd_matrix[word_id, :])
                 vector_file.write(word + " " + " ".join(vector) + "\n")
