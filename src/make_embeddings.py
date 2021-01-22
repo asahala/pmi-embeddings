@@ -18,13 +18,17 @@ from sklearn.preprocessing import normalize
 
 __version__ = "2021-01-20"
 
-# Globals
-PADDING = "#"
-LACUNA = "_"
-STOP = "<stop>"
+# Globals. All meta-symbols must have a string and integer form.
+# Meta-symbol integers must be negative! Add all meta-symbols
+# to META_SYMBOLS
+PADDING = {'str': "#", 'int': -3}
+STOP = {'str': "<stop>", 'int': -2}
+LACUNA = {'str': "_", 'int': -1}
+
+META_SYMBOLS = (PADDING['str'], LACUNA['str'], STOP['str'])
 
 # Pretty print dividers 
-DIV = "> " + "--" * 16
+DIV = "> " + "--" * 24
 
 """ *´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*
 
@@ -108,23 +112,20 @@ class CSW:
                            contexts = [[c1], [c2], ... [cn]]
                            lookup = {(bigram): [i, ...], ...}
 
-                           where i refer to index of the contexts where bigram
+                           where i refers to index of the contexts where bigram
                            was seen. 
 
                            TODO: - removed duplicate contexts
                                  - store bigrams only from a -> b """
-
 
     def __init__(self):
         self.contexts = []
         self.context_lookup = defaultdict(list)
         self.s = 0
 
-
     @property
     def size(self):
         return get_size(self.contexts) + get_size(self.context_lookup)
-
         
     def add_lookup(self, bigram, id_, discard):
         """ Add bigram to lookup if the requirements are met
@@ -147,14 +148,11 @@ class CSW:
         self.context_lookup[bigram].append(id_)
         return True
 
-
     def add_context(self, context):
         """ Add context window to lookup
         :param context            context window
         :type context             [int, ...] """
-
         self.contexts.append(context)
-
 
     def _get_phi(self, contexts):
         """ Return context similarity weight φ over the
@@ -162,7 +160,7 @@ class CSW:
 
         :param contexts           list of context windows
         :type contexts            [[int, ...], ...]"""
-        
+
         if len(contexts) == 1:
             return 1.0
         else:
@@ -176,7 +174,6 @@ class CSW:
             if len(prop_vector) == 0:
                 return 1
             return sum(prop_vector) / len(prop_vector)
-
 
     def compute(self, dim, k_factor=0, verbose=False):
         """ Returns Context similarity Weights as a sparse
@@ -227,6 +224,7 @@ class Cooc:
         :param distance_scaling    take distance in to account in cooc counts
         :param window_size         window size (keyword included)
         :param k_factor            CSW k-factor
+        :param dirty_stopwords     remove disallowed words from corpus
         :param window_scaling      scale co-occurrences with window size
         
         :type filename             str
@@ -237,6 +235,7 @@ class Cooc:
         :type distance_scaling     bool
         :type window_size          int
         :type k_factor             int / float
+        :type dirty_stopwords      bool
         :type window_scaling       bool """
     
         self.filename = filename
@@ -253,7 +252,7 @@ class Cooc:
 
         self.rand = random.Random(0)
         self.word_count = defaultdict(int)
-        self.pad = [-3] * self.window_size 
+        self.pad = [PADDING['int']] * self.window_size 
 
         self.context_weights = CSW()
         self.window_id = -1
@@ -273,11 +272,9 @@ class Cooc:
             else:
                 self.scale = 2
 
-
     @property
     def pmi_matrix(self):
         return self.pmi
-
 
     def _read_file(self, only_vocab=False):
         """ Read file line-by-line to save memory. The file is read into chunks
@@ -300,18 +297,21 @@ class Cooc:
             word = corpus.readline().rstrip()
             while word:
                 i += 1
-                if word != PADDING:
+                if word != PADDING['str']:
                     if only_vocab:
                         if self.dirty_stopwords:
-                            """ If dirty stop words, remove all not-allowed
-                            words from the corpus as in Levy et al. 2015"""
-                            if word == STOP:
+                            """ If dirty stop words, remove all disallowed
+                            words from the corpus as in Levy et al. 2015;
+                            For cuneiform languages, we remove only stop
+                            words and < min_counts, but not lacunae! """
+                            if word == STOP['str']:
                                 pass
                             elif word in self.vocabulary_set:
                                 span.append(self.word_to_id[word])
                         else:
                             """ If clean stop words, add as they are
-                            and replace non-vocabulary items with -1"""
+                            and replace non-vocabulary items with negative
+                            indices """
                             if word in self.vocabulary_set:
                                 span.append(self.word_to_id[word])
                     else:
@@ -330,7 +330,6 @@ class Cooc:
                 word = corpus.readline().rstrip()
             chunks.append(span)
             yield chunks        
-
 
     def _count_freqs(self):
         """ Count word freqs, make vocabulary and subsampling dictionary """
@@ -362,19 +361,19 @@ class Cooc:
         representing the vocabulary as sparse matrix row and column indices
         and saves some memory in CSW """
         self.word_to_id = {w: i for i, w in
-                        enumerate(self.vocabulary) if w not in (LACUNA, STOP)}
+                           enumerate(self.vocabulary) if w not in META_SYMBOLS}
 
         """ Give negative index for all meta symbols """
-        self.word_to_id[STOP] = -2
-        self.word_to_id[LACUNA] = -1
+        self.word_to_id[STOP['str']] = STOP['int']
+        self.word_to_id[LACUNA['str']] = LACUNA['int']
 
         """ Make a set of words that are discarded in CSW, by default
         all words that cannot possibly have more than one co-occurrence with
         any other word (i.e. we want to only save windows that matter) """
-        self.discard = frozenset([self.word_to_id[w] for w in self.vocabulary_set
+        self.csw_discard = frozenset([self.word_to_id[w] for w in self.vocabulary_set
                         if self.word_count[w] < 2])
 
-        """ Prepare subsampling: calculate discard probabilities """
+        """ Prepare subsampling: calculate discard probabilities. """
         if self.subsampling_rate:
             ssr = self.subsampling_rate * corpus_size
             self.subsampling_dict = {self.word_to_id[w]: 1-math.sqrt(ssr/c)
@@ -382,19 +381,20 @@ class Cooc:
                                      if c > ssr}
 
         if self.verbose:
-            lacunae = self.word_count.get(LACUNA, 0)
+            lacunae = self.word_count.get(LACUNA['str'], 0)
+            stops = self.word_count.get(STOP['str'], 0)
             print("   Corpus statistics:")
             print("      spans       {}".format(spans))
             print("      tokens      {}".format(corpus_size))
             print("      types       {}".format(len(self.vocabulary_set)))
             print("      lacunae     {}".format(lacunae))
+            print("      stopswords  ()".format(stops))
             print("      frag. rate: %.2f" % (lacunae/corpus_size))
 
             if self.subsampling_rate:
                 print("> Subsampled words: {}".format(ssr))
                 print("> Words in subsampling dictionary: {}"\
                       .format(len(self.subsampling_dict)))
-
 
     def _extract_windows(self, chunk):
         """ Extract symmetric oc-occurrence windows from text chunks"""
@@ -403,7 +403,7 @@ class Cooc:
 
         """ Split input text into windows; note that at this point
         the word are already represented as integers! 0 is the most
-        common word 1 the second etc. -2 is a padding and -1 a lacuna. """
+        common word 1 the second etc. Negative indices are meta-symbols """
         for w in zip(*[chunk[i:] for i in range(1+wz*2)]):
             center = w[wz]
             
@@ -413,7 +413,7 @@ class Cooc:
                     
             """ If CSW is on, save co-occurrence context """
             if self.csw:
-                if center not in self.discard:
+                if center not in self.csw_discard:
                     context = w[0:wz] + w[wz+1:]
                     self.context_weights.add_context(context)
                     self.window_id += 1
@@ -428,7 +428,7 @@ class Cooc:
                 if self.csw:
                     self.context_weights.add_lookup(bigram,
                                                     self.window_id,
-                                                    self.discard)
+                                                    self.csw_discard)
                 """ Add co-occurrence to sparse matrix if not stopword,
                 lacuna or padding. If dynamic window is set, reduce
                 co-occurrence count based on words' mutual distance """
@@ -439,14 +439,13 @@ class Cooc:
                         distance = 1 / abs(i - wz)
                     self.data.append(1 * distance)
 
-  
     def count_cooc(self):
         """ This method creates a co-occurrence matrix of
         the given corpus """
+        st = time.time()
 
         """ Initialize word counts to set dimensions, subsampling,
         word indices etc. """
-        st = time.time()
         self._count_freqs()
 
         """ Initialize vocab x vocab sized sparse co-occurrence matrix """
@@ -486,10 +485,12 @@ class Cooc:
                     continue
 
                 # Would be faster if done in _read_file()
+                """ Filter out subsampled words """
                 if self.subsampling_rate:
                     span = [w for w in span if (w not in self.subsampling_dict
                                 or self.rand.random() > self.subsampling_dict[w])]
 
+                """ Pad spans to properly align peripheral windows in CSW """
                 padded = self.pad + span + self.pad
                 self._extract_windows(padded)
 
@@ -513,7 +514,6 @@ class Cooc:
 
         """ Calculate CSW and take Hadamard product of the co-occurrence matrix
         and the context similiarity weight matrix. """
-
         if self.csw:
             st = time.time()
             if self.verbose:
@@ -534,7 +534,6 @@ class Cooc:
 
     
     def calculate_pmi(self, shift_type=0, alpha=None, lambda_=None, threshold=0):
-
         """ Calculate Shifted PMI matrix with various modifications
 
         :param lambda_                  Dirichlet smoothing
@@ -562,7 +561,6 @@ class Cooc:
         PMI(a,b) = log2 --------   =  log2 ( N * f(a,b) * -------- )
                         p(a)p(b)                          f(a)f(b)    
 
-
         """
 
         st = time.time()
@@ -573,17 +571,18 @@ class Cooc:
         sum_b = np.array(self.cooc_matrix.sum(axis=0))[0, :]
 
         """ Dirichlet and context distribution smoothing as in
-
            Jacob Jungmaier (Accessed: 2020-12-01):
               https://github.com/jungmaier/dirichlet-smoothed-word-embeddings/
            Omer Levy (Accessed: 2019-05-30)
               https://bitbucket.org/omerlevy/hyperwords/ """
-
         if lambda_ is not None:
             if self.verbose:
                 print("> Dirichlet smoothing λ={}".format(lambda_))
             sum_a += (lambda_ * self.cooc_matrix.shape[0])
             sum_b += (lambda_ * self.cooc_matrix.shape[0])
+            # TODO: do not modify the cooc_matrix directly! May cause
+            #       problems if someone runs this method several times
+            #       without recalculating the matrix!
             self.cooc_matrix.data = self.cooc_matrix.data + lambda_
         if alpha is not None:
             if self.verbose:
@@ -598,11 +597,12 @@ class Cooc:
         if self.scale != 1:
             self.pmi *= self.scale
         
-        """ Calculate PMI """
+        """ Calculate PMI (take reciprocals and multiply all
+        columns and rows with reciprocal * sum to get the
+        products of marginal probabilities. """
         with np.errstate(divide='ignore'):
             sum_a = np.reciprocal(sum_a)
             sum_b = np.reciprocal(sum_b)
-
         self.pmi = self.pmi.multiply(sum_a)\
                            .multiply(sum_b[:, None]) * sum_total
         self.pmi.data = np.log2(self.pmi.data)
@@ -625,9 +625,7 @@ class Cooc:
             print('    (%.2f seconds)' % (et))
             print(DIV)
 
-
     def factorize(self, dimensions, eigenvalue_weighting=0.0):
-
         """ Perform truncated SVD for the PMI matrix. 
         
         Adapted from Jungmaier 
@@ -642,16 +640,16 @@ class Cooc:
             print("> SVD...")
         
         if eigenvalue_weighting == 1:
-            """ Traditional SVD """
+            """ Traditional SVD as in pmizer's pmi2vec """
             svd = TruncatedSVD(n_components=dimensions, random_state=0)
             matrix = svd.fit_transform(matrix)
         elif not eigenvalue_weighting:
-            """ Ignore diagonal matrix. Improves performance """
+            """ Ignore eigen value matrix. Improves performance """
             matrix, _, _ = randomized_svd(matrix,
                                      n_components=dimensions,
                                      random_state=0)
         else:
-            """ Weight diagonal matrix """
+            """ Weight eigen value matrix """
             matrix, s, _ = randomized_svd(matrix, 
                                      n_components=dimensions,
                                      random_state=0)
@@ -663,7 +661,9 @@ class Cooc:
             print("> Normalizing vectors...")
 
         """ Normalize vectors to unit length; reported to increase
-        performance in Levy et al 2015 and Wilson and Schakel 2015 """
+        performance in Levy et al 2015 and Wilson and Schakel 2015.
+        After normalization over all v elements of the vector:
+        Σ v^2 = 1 """
         self.svd_matrix = normalize(matrix, norm='l2', axis=1, copy=False)
         del matrix
 
@@ -674,31 +674,26 @@ class Cooc:
             print('    (%.2f seconds)' % (et))
             print(DIV)
 
-
-    def save_vectors(self, file_name):
-        
+    def save_vectors(self, file_name):        
         """ Saves word vectors from a word vector matrix to a text file 
         in word2vec rawtext format.
 
         :param file_name              vector file name
         :type file_name               str                           """
 
-        if self.verbose:
-            print("> Saving %i word vectors... " % len(self.vocabulary))
-
         st = time.time()
+        if self.verbose:
+            print("> Saving word %i vectors... " % len(self.vocabulary))
+
+        # TODO: Clean up zero-vectors. These may occursfor words that
+        # are in completely broken contexts without any contextwords.
 
         with open(file_name, "w", encoding="utf-8") as vector_file:
             """ Vector file header """
             vector_file.write("%i %i\n" % (self.svd_matrix.shape[0],
                                            self.svd_matrix.shape[1]))
-
             for i, word in enumerate(self.vocabulary, start=1):
-                #""" Save vectors in descending frequency order; make sure
-                #that vectors will not contain meta-symbols (negative id) """
-                word_id = self.word_to_id[word]
-                #if word_id >= 0:
-                vector = map(str, self.svd_matrix[word_id, :])
+                vector = map(str, self.svd_matrix[self.word_to_id[word], :])
                 vector_file.write(word + " " + " ".join(vector) + "\n")
 
         if self.verbose:
@@ -708,10 +703,6 @@ class Cooc:
 
 
 if __name__ == "__main__":
-
-    """ Modified and extended from Jacob Jungmaier:
-           https://github.com/jungmaier/dirichlet-smoothed-word-embeddings
-                                                 (Accessed: 2020-12-01) """
 
     desc = "Calculates word embeddings by using Shifted PPMI \
     (Levy, Dagan & Goldberg 2015), SVD, Dirichlet Smoothing \
@@ -770,6 +761,7 @@ if __name__ == "__main__":
                         help='Verbose output.')
     args = parser.parse_args()
 
+    print(DIV)
     print(args)
 
     """ Init embeddings object """
