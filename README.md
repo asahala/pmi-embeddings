@@ -2,10 +2,11 @@
 State-of-the-art count-based word vectors for low-resource languages with a special focus on historical languages, especially Akkadian and Sumerian.
 
 1. ```src/make_embeddings.py``` creates PMI-based word vectors from the source corpus.
-2. ```src/hypertune.py``` tests hyperparameters (by using brute force) to find the best settings for the given data set (requires a gold standard).
-3. ```corpora/extract_corpus.py``` a script for extracting sense-disambiguated corpora from Korp-Oracc VRT files.
-4. ```corpora/akkadian.zip``` a zipped test corpora of Akkadian language.
-5. ```eval/gold.tsv``` an initial version of the [Akkadian gold standard](https://www.helsinki.fi/en/news/language-culture/creating-a-gold-standard-for-akkadian-word-embeddings).
+2. ```src/explore_embeddings.py``` make simple searches from embeddings. Requires a vector file and a dictionary (included in ```corpora/akkadian.zip```)
+3. ```src/hypertune.py``` tests hyperparameters (by using brute force) to find the best settings for the given data set (requires a gold standard).
+4. ```corpora/extract_corpus.py``` a script for extracting sense-disambiguated corpora from Korp-Oracc VRT files.
+5. ```corpora/akkadian.zip``` a zipped test corpora of Akkadian language.
+6. ```eval/gold.tsv``` an initial version of the [Akkadian gold standard](https://www.helsinki.fi/en/news/language-culture/creating-a-gold-standard-for-akkadian-word-embeddings).
 
 ## Jupyter tutorial
 For those who like to use Jupyter Notebooks, ```src/jupyter_embeddings.ipynb``` instructs how to build your own word embeddings with just a few lines of code. 
@@ -38,5 +39,5 @@ Run script from the commmand line ```python3 make_embeddings.py corpusfile vecto
 On Intel i5-2400 3.10GHz using a corpus of 1M words and a window size of 3, takes ca. 35 seconds to make basic embeddings and 50 seconds to make CSW-embeddings. On 2.1GHz Xeon Gold 6230 the runtimes are ca. 6 and 10 seconds respectively. Although this is quite fast, testing hundreds or thousands of combinations using ```hypertune.py``` may take a while.
 
 ### TODO:
-- Make sure meta-symbol vectors are not saved
+- Make sure meta-symbol vectors and other zero-vectors (words in completely broken contexts) are not saved! Causes a warning in Gensim
 
