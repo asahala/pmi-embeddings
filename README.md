@@ -34,8 +34,9 @@ Word2vec compatible raw text word vectors.
 ### Parameters and usage
 Run script from the commmand line ```python3 make_embeddings.py corpusfile vectorfile [parameters]```. See [this document](https://docs.google.com/document/d/1TjVWqrhalCDjkOQf-JLk1jmC6N83MWGUIEVjbJpm9Es) for detailed information about the parameters and references. 
 
-### Performance
-On Intel i5-2400 3.10GHz using a corpus of 1M words and a window size of 3, takes ca. 35 seconds to make basic embeddings and 50 seconds to make CSW-embeddings. Although this is quite fast, testing hundreds of combinations using ```hypertune.py``` may take a while.
+### Performance (runtime)
+On Intel i5-2400 3.10GHz using a corpus of 1M words and a window size of 3, takes ca. 35 seconds to make basic embeddings and 50 seconds to make CSW-embeddings. On 2.1GHz Xeon Gold 6230 the runtime is ca. 6 and 10 seconds respectively. Although this is quite fast, testing hundreds or thousands of combinations using ```hypertune.py``` may take a while.
 
 ### TODO:
 - Make sure meta-symbol vectors are not saved
+
