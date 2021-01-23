@@ -691,13 +691,16 @@ class Cooc:
         # This is a temporary fix. Would be better to do in the fly
         # E.g. by deleting isolated words in the middle of broken
         # passages.
-        def get_nonzero():
+        def get_nonzero(count_only):
             for i, word in enumerate(self.vocabulary, start=1):
                 vector = self.svd_matrix[self.word_to_id[word], :]
                 if sum(vector) != 0 and word not in META_SYMBOLS:
-                    yield word + " " + " ".join(map(str, vector))
+                    if count_only:
+                        yield 1
+                    else:
+                        yield word + " " + " ".join(map(str, vector))
 
-        vocab_size = sum(1 for e in get_nonzero())
+        vocab_size = sum(get_nonzero(count_only=True))
 
         if self.verbose:
             print("> Saving %i non-zero vectors (%i discarded)... " \
@@ -707,8 +710,8 @@ class Cooc:
             """ Vector file header """
             vector_file.write("%i %i\n" % (vocab_size,
                                            self.svd_matrix.shape[1]))
-            for vector in get_nonzero():
-                vector_file.write(vector + '\n')#.join(non_zero))
+            for vector in get_nonzero(count_only=False):
+                vector_file.write(vector + '\n')
 
         if self.verbose:
             et = time.time() - st
