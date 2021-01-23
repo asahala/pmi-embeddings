@@ -675,16 +675,15 @@ class Cooc:
             print('    (%.2f seconds)' % (et))
             print(DIV)
 
-    def save_vectors(self, file_name):        
+    def save_vectors(self, filename):        
         """ Save non-zero word vectors (i.e. ignore words that only
         occur in completely broken contexts, which may cause zero-
         division errors in certain word vector tools). 
 
-        :param file_name              vector file name
-        :type file_name               str                       """
+        :param filename              vector file name
+        :type filename               str                       """
 
         st = time.time()
-        non_zero = []
 
         if self.verbose:
             print("> Filtering zero-vectors...")
@@ -698,18 +697,17 @@ class Cooc:
                 if sum(vector) != 0 and word not in META_SYMBOLS:
                     yield word + " " + " ".join(map(str, vector))
 
-        non_zero = get_nonzero()
         vocab_size = sum(1 for e in get_nonzero())
 
         if self.verbose:
             print("> Saving %i non-zero vectors (%i discarded)... " \
                   % (vocab_size, self.svd_matrix.shape[0]-vocab_size))
 
-        with open(file_name, "w", encoding="utf-8") as vector_file:
+        with open(filename, "w", encoding="utf-8") as vector_file:
             """ Vector file header """
             vector_file.write("%i %i\n" % (vocab_size,
                                            self.svd_matrix.shape[1]))
-            for vector in non_zero:
+            for vector in get_nonzero():
                 vector_file.write(vector + '\n')#.join(non_zero))
 
         if self.verbose:
@@ -806,4 +804,4 @@ if __name__ == "__main__":
                          eigenvalue_weighting=args.eigenvalue_weighting)
 
     """ Save word vectors from embeddings object """
-    embeddings.save_vectors(file_name=args.word_vector_filename)
+    embeddings.save_vectors(filename=args.word_vector_filename)
