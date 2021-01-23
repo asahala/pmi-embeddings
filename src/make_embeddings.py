@@ -16,15 +16,15 @@ from sklearn.utils.extmath import randomized_svd
 from sklearn.decomposition import TruncatedSVD
 from sklearn.preprocessing import normalize
 
-__version__ = "2021-01-20"
+__version__ = "2021-01-23"
 
 # Globals. All meta-symbols must have a string and integer form.
-# Meta-symbol integers must be negative! Add all meta-symbols
-# to META_SYMBOLS
-PADDING = {'str': "#", 'int': -3}
-STOP = {'str': "<stop>", 'int': -2}
-LACUNA = {'str': "_", 'int': -1}
+# Integers must be negative! 
+PADDING = {'str': "#",      'int': -3}
+STOP =    {'str': "<stop>", 'int': -2}
+LACUNA =  {'str': "_",      'int': -1}
 
+# If you use more symbols, add them here as well in their string form.
 META_SYMBOLS = (PADDING['str'], LACUNA['str'], STOP['str'])
 
 # Pretty print dividers 
@@ -63,10 +63,13 @@ DIV = "> " + "--" * 24
   Code cannibalized from Jacob Jungmaier and Omer Levy is credited where
   it is due.
 
+ Version history:
+   2021-01-20       Add dirty stop words.
+   2021-01-23       Filter non-zero vectors to pacify Gensim warnings.
+
 *´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`* """ 
 
 def get_size(obj, seen=None):
-
     """ Recursively finds size of objects
         copied from: https://stackoverflow.com/questions/449560/ """
 
@@ -76,7 +79,6 @@ def get_size(obj, seen=None):
     obj_id = id(obj)
     if obj_id in seen:
         return 0
-
     # Important mark as seen *before* entering recursion to gracefully handle
     # self-referential objects
     seen.add(obj_id)
@@ -388,7 +390,7 @@ class Cooc:
             print("      tokens      {}".format(corpus_size))
             print("      types       {}".format(len(self.vocabulary_set)))
             print("      lacunae     {}".format(lacunae))
-            print("      stopswords  ()".format(stops))
+            print("      stopwords   {}".format(stops))
             print("      frag. rate: %.2f" % (lacunae/corpus_size))
 
             if self.subsampling_rate:
@@ -532,7 +534,6 @@ class Cooc:
 
         self.time += et
 
-    
     def calculate_pmi(self, shift_type=0, alpha=None, lambda_=None, threshold=0):
         """ Calculate Shifted PMI matrix with various modifications
 
@@ -675,26 +676,41 @@ class Cooc:
             print(DIV)
 
     def save_vectors(self, file_name):        
-        """ Saves word vectors from a word vector matrix to a text file 
-        in word2vec rawtext format.
+        """ Save non-zero word vectors (i.e. ignore words that only
+        occur in completely broken contexts, which may cause zero-
+        division errors in certain word vector tools). 
 
         :param file_name              vector file name
-        :type file_name               str                           """
+        :type file_name               str                       """
 
         st = time.time()
-        if self.verbose:
-            print("> Saving word %i vectors... " % len(self.vocabulary))
+        non_zero = []
 
-        # TODO: Clean up zero-vectors. These may occursfor words that
-        # are in completely broken contexts without any contextwords.
+        if self.verbose:
+            print("> Filtering zero-vectors...")
+
+        # This is a temporary fix. Would be better to do in the fly
+        # E.g. by deleting isolated words in the middle of broken
+        # passages.
+        def get_nonzero():
+            for i, word in enumerate(self.vocabulary, start=1):
+                vector = self.svd_matrix[self.word_to_id[word], :]
+                if sum(vector) != 0 and word not in META_SYMBOLS:
+                    yield word + " " + " ".join(map(str, vector))
+
+        non_zero = get_nonzero()
+        vocab_size = sum(1 for e in get_nonzero())
+
+        if self.verbose:
+            print("> Saving %i non-zero vectors (%i discarded)... " \
+                  % (vocab_size, self.svd_matrix.shape[0]-vocab_size))
 
         with open(file_name, "w", encoding="utf-8") as vector_file:
             """ Vector file header """
-            vector_file.write("%i %i\n" % (self.svd_matrix.shape[0],
+            vector_file.write("%i %i\n" % (vocab_size,
                                            self.svd_matrix.shape[1]))
-            for i, word in enumerate(self.vocabulary, start=1):
-                vector = map(str, self.svd_matrix[self.word_to_id[word], :])
-                vector_file.write(word + " " + " ".join(vector) + "\n")
+            for vector in non_zero:
+                vector_file.write(vector + '\n')#.join(non_zero))
 
         if self.verbose:
             et = time.time() - st
