@@ -39,4 +39,4 @@ Run script from the commmand line ```python3 make_embeddings.py corpusfile vecto
 On Intel i5-2400 3.10GHz using a corpus of 1M words and a window size of 3, takes ca. 35 seconds to make basic embeddings and 50 seconds to make CSW-embeddings. On 2.1GHz Xeon Gold 6230 the runtimes are ca. 6 and 10 seconds respectively. Although this is quite fast, testing hundreds or thousands of combinations using ```hypertune.py``` may take a while.
 
 ### Version history
-2021-01-23 -- ```make_embeddings.py``` no longer saves zero-vectors that may cause zero division errors.
+2021-01-23 -- ```make_embeddings.py``` no longer saves zero-vectors for words that occur in broken contexts that may cause zero division errors.
