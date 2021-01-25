@@ -109,7 +109,7 @@ def test_model(corpus_file, chunksize, datasets, pmi_params, params, **kwargs):
         embs.calculate_pmi(**pmi_p)
         for dim in dimensions:
             embs.factorize(dim)
-            embs.save_vectors(file_name='DELETEME.VEC') 
+            embs.save_vectors('DELETEME.VEC') 
             evaluate_model(datasets, params, pmi_p, dim)
 
 for i, p in enumerate(parameters):
