@@ -43,4 +43,5 @@ On Intel i5-2400 3.10GHz using a corpus of 1M words and a window size of 3, take
 
 ### TODO:
 - Add parsing directly from Oracc using Niek's script
-- Add NPMI, PMI-delta
+- PMI-delta
+- TF-IDF filtering
