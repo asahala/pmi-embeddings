@@ -16,7 +16,7 @@ from sklearn.utils.extmath import randomized_svd
 from sklearn.decomposition import TruncatedSVD
 from sklearn.preprocessing import normalize
 
-__version__ = "2021-01-23"
+__version__ = "2021-01-26"
 
 # Globals. All meta-symbols must have a string and integer form.
 # Integers must be negative! 
@@ -64,8 +64,9 @@ DIV = "> " + "--" * 24
   it is due.
 
  Version history:
-   2021-01-20       Add dirty stop words.
+   2021-01-26       Add PMI^2 and NPMI
    2021-01-23       Filter non-zero vectors to pacify Gensim warnings.
+   2021-01-20       Add dirty stop words
 
 *´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`* """ 
 
@@ -534,7 +535,8 @@ class Cooc:
 
         self.time += et
 
-    def calculate_pmi(self, shift_type=0, alpha=None, lambda_=None, threshold=0):
+    def calculate_pmi(self, shift_type=0, alpha=None, lambda_=None, threshold=0,
+                      pmi_variant=None):
         """ Calculate Shifted PMI matrix with various modifications
 
         :param lambda_                  Dirichlet smoothing
@@ -544,6 +546,7 @@ class Cooc:
                                           0: Jungmaier et al. 2020
                                           1: Levy & Goldberg 2014
                                           2: Experimental: linear addition
+        :param variant                  set PMI variant
 
         :type lambda_                   float (recommended: 0.0001)
         :type alpha                     float (recommended: 0.75)
@@ -552,6 +555,7 @@ class Cooc:
                                           0: if PMI(a,b) < -k, PMI(a,b) = 0
                                           1: max(PMI(a,b) - log2(k), 0)
                                           2: max(PMI(a,b) + k, 0)
+        :type variant                   str (pmi2, npmi)
 
         For PMI(*,*) it is more efficient to calculate the scores using
         elementwise matrix multiplication thanks to optimization in 
@@ -607,6 +611,24 @@ class Cooc:
         self.pmi = self.pmi.multiply(sum_a)\
                            .multiply(sum_b[:, None]) * sum_total
         self.pmi.data = np.log2(self.pmi.data)
+
+        """ Various PMI derivations:
+        
+        NPMI          (Gerlof Bouma 2009): PMI / -log2 p(a,b)
+        PMI^2         (Daille 1994): I define PMI^2 here as 
+                      PMI - ((1+x) * -log2 p(a,b)), where x is a small smoothing
+                      factor to make sure perfect dependencies are not
+                      confused with null co-occurrences in the sparse matrix, 
+                      as PMI^2 has bounds of 0 > log2 p(a,b) > -inf. x = 0.0001
+                      should be enough for corpora of few million words 
+                      to avoid any bigram getting a score of 0.0 """
+
+        if pmi_variant == 'npmi':
+            joint_dist_matrix = self.cooc_matrix.data * (1/sum_total)
+            self.pmi.data = self.pmi.data / -np.log2(joint_dist_matrix.data)
+        elif pmi_variant == 'pmi2':
+            joint_dist_matrix = self.cooc_matrix.data * (1/sum_total)
+            self.pmi.data -= (1.0001 * -np.log2(joint_dist_matrix.data))
 
         """ Apply threshold for Shifted PMI. """
         if threshold is not None:
@@ -758,6 +780,8 @@ if __name__ == "__main__":
                               overflow encountered, choose lower value.')
     parser.add_argument('--dimensions', '-d', type=int, default=300,
                         help='Size of word embeddings, integer. Default: 300.')
+    parser.add_argument('--pmi_variant', type=str, default=None,
+                        help='PMI variant: npmi, pmi2')
     parser.add_argument('--smoothing_factor', '-l', type=float, default=None,
                         help='Smoothing factor lambda, float, \
                               useful range: 0-1. Default: 0.0001.')
@@ -780,6 +804,12 @@ if __name__ == "__main__":
 
     print(DIV)
     print(args)
+    """ Warnings """
+    if args.pmi_variant is not None:
+        print(DIV)
+        if args.threshold is not None:
+            print('> Warning: --threshold and --pmi_variant are '\
+                  'generally incompatible.')
 
     """ Init embeddings object """
     embeddings = Cooc(args.corpus_file,
@@ -800,7 +830,8 @@ if __name__ == "__main__":
     embeddings.calculate_pmi(shift_type=args.shift_type,
                              alpha=args.cds,
                              lambda_=args.smoothing_factor,
-                             threshold=args.threshold)
+                             threshold=args.threshold,
+                             pmi_variant=args.pmi_variant)
 
     """ Factorize sparse matrix  """
     embeddings.factorize(dimensions=args.dimensions,
