@@ -11,6 +11,8 @@ State-of-the-art count-based word vectors for low-resource languages with a spec
 ## Jupyter tutorials
 For those who like to use Jupyter Notebooks, ```src/jupyter_embeddings.ipynb``` instructs how to build your own word embeddings with just a few lines of code. ```scr/jypyter_explore_embeddings.ipynb``` guides how to make queries from embeddings.
 
+For setting up Jupyter environment, read [this guide](https://github.com/niekveldhuis/compass/blob/master/1_Preliminaries/install_packages.ipynb) by Niek Veldhuis.
+
 ## Requirements
 ```Python 3.6``` or newer, [numpy](https://numpy.org/), [scipy](https://www.scipy.org/) and [sklearn](https://scikit-learn.org/stable/). For evaluation scripts you will also need [gensim](https://pypi.org/project/gensim/). Tested on Linux and Windows 7/10.
 
