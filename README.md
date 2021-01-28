@@ -22,7 +22,7 @@ For setting up Jupyter environment, read [this guide](https://github.com/niekvel
 + Dirichlet Smoothing (Turney & Pantel 2010; Jungmaier et al. 2020)
 + Context Similarity Weighting (Sahala & Linden 2020)
 + Shifted PMI (Levy et al. 2015) with different variants
-+ Dynamic Context Windows (Sahlgren 2006)
++ Dynamic Context Windows (Sahlgren 2006; Mikolov et al. 2013; Pennington et al. 2014)
 + Subsampling (Mikolov et al. 2013)
 + Context Distribution Smoothing (Levy et al. 2015)
 + Eigenvalue Weighting (Caron 2001; Levy et al. 2015)
