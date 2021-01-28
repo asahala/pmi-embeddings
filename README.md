@@ -5,7 +5,7 @@ State-of-the-art count-based word vectors for low-resource languages with a spec
 2. ```src/explore_embeddings.py``` make simple searches from embeddings. Requires a vector file and a dictionary (included in ```corpora/akkadian.zip```)
 3. ```src/hypertune.py``` tests hyperparameters (by using brute force) to find the best settings for the given data set (requires a gold standard).
 4. ```corpora/extract_corpus.py``` a script for extracting sense-disambiguated corpora from Korp-Oracc VRT files.
-5. ```corpora/akkadian.zip``` a zipped test corpora of Akkadian language.
+5. ```corpora/akkadian.zip``` a zipped test corpora and a dictionary of Akkadian language (use these to generate new embeddings and to explore them).
 6. ```eval/gold.tsv``` an initial version of the [Akkadian gold standard](https://www.helsinki.fi/en/news/language-culture/creating-a-gold-standard-for-akkadian-word-embeddings).
 
 ## Jupyter tutorials
