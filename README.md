@@ -14,7 +14,7 @@ For those who like to use Jupyter Notebooks, ```src/jupyter_embeddings.ipynb``` 
 For setting up Jupyter environment, read [this guide](https://github.com/niekveldhuis/compass/blob/master/1_Preliminaries/install_packages.ipynb) by Niek Veldhuis. Note that you only need the packages listed below (of which most are likely preinstalled in Conda/Jypyter).
 
 ## Requirements
-```Python 3.6``` or newer, [numpy](https://numpy.org/), [scipy](https://www.scipy.org/) and [sklearn](https://scikit-learn.org/stable/). For evaluation scripts you will also need [gensim](https://pypi.org/project/gensim/). Tested on Linux and Windows 7/10.
+```Python 3.6``` or newer, [numpy](https://numpy.org/), [scipy](https://www.scipy.org/) and [sklearn](https://scikit-learn.org/stable/). For evaluation scripts you will also need [gensim](https://pypi.org/project/gensim/).
 
 ## Features
 ```make_embeddings.py``` is a fast and efficient way to build PMI-based word embeddings from small (a few million words) text corpora. It combines findings from several recent research papers:
