@@ -1,5 +1,5 @@
 # pmi-embeddings
-State-of-the-art count-based word vectors for low-resource languages with a special focus on historical languages, especially Akkadian and Sumerian.
+State-of-the-art count-based word vectors for low-resource languages with a special focus on historical languages, especially Akkadian and Sumerian. This repository contains the up to date version of scripts used in Sahala 2019: PMI+SVD and Semantic Domains in Akkadian Texts (a poster presented in HELSLANG summer conference).
 
 1. ```src/make_embeddings.py``` creates PMI-based word vectors from the source corpus.
 2. ```src/explore_embeddings.py``` make simple searches from embeddings. Requires a vector file and a dictionary (included in ```corpora/akkadian.zip```)
