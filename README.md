@@ -43,6 +43,7 @@ On Intel i5-2400 3.10GHz using a corpus of 1M words and a window size of 3, take
 ### Version history
 - 2021-01-26 -- ```make_embeddings.py``` added pmi-variants.
 - 2021-01-23 -- ```make_embeddings.py``` no longer saves vectors for words that occur in completely broken contexts (Gensim doesn't like them).
+- 2021-01-01 -- Pmizer word vectors are no longer developed. This is now the main tool for PMI-based word embeddings.
 
 ### TODO:
 - Add parsing directly from Oracc using Niek's script
