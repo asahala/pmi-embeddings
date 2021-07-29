@@ -8,7 +8,7 @@ State-of-the-art count-based word vectors for low-resource languages with a spec
 5. ```corpora/akkadian.zip``` a zipped test corpora and a dictionary of Akkadian language (use these to generate new embeddings and to explore them).
 6. ```eval/gold.tsv``` an initial version of the [Akkadian gold standard](https://www.helsinki.fi/en/news/language-culture/creating-a-gold-standard-for-akkadian-word-embeddings).
 
-## What are word embeddings and why are they useful?
+### What are word embeddings and why are they useful?
 Word embeddings represent words as real-valued vectors in a multi-dimensional vector space. As the vectors encode words' contextual similarity, they can be used to extract words that show higher interchangeability with each other. Thus, in addition to analogy and similarity tasks, word embeddings can be exploited in almost any NLP application, including sentiment analysis, spam detection and automatic chat moderation, document classification, machine translation etc. This repository contains basic tools for lexicographic analysis, namely exploring vocabularies of historical languages in their own terms.
 
 ## Jupyter tutorials
