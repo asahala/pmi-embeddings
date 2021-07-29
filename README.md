@@ -1,5 +1,5 @@
 # pmi-embeddings
-State-of-the-art count-based word vectors for low-resource languages with a special focus on historical languages, especially Akkadian and Sumerian. This repository contains the up to date version of scripts used in Sahala 2019: _PMI+SVD and Semantic Domains in Akkadian Texts_ (a poster presented in HELSLANG summer conference).
+State-of-the-art count-based word vectors for low-resource languages with a special focus on historical languages, especially Akkadian and Sumerian.
 
 1. ```src/make_embeddings.py``` creates PMI-based word vectors from the source corpus.
 2. ```src/explore_embeddings.py``` make simple searches from embeddings. Requires a vector file and a dictionary (included in ```corpora/akkadian.zip```)
@@ -7,6 +7,9 @@ State-of-the-art count-based word vectors for low-resource languages with a spec
 4. ```corpora/extract_corpus.py``` a script for extracting sense-disambiguated corpora from Korp-Oracc VRT files.
 5. ```corpora/akkadian.zip``` a zipped test corpora and a dictionary of Akkadian language (use these to generate new embeddings and to explore them).
 6. ```eval/gold.tsv``` an initial version of the [Akkadian gold standard](https://www.helsinki.fi/en/news/language-culture/creating-a-gold-standard-for-akkadian-word-embeddings).
+
+## What are word embeddings and why are they useful?
+Word embeddings represent words as real-valued vectors in a multi-dimensional vector space. As the vectors encode words' contextual similarity, they can be used to extract words that show higher interchangeability with each other. Thus, in addition to analogy and similarity tasks, word embeddings can be exploited in almost any NLP application, including sentiment analysis, spam detection and automatic chat moderation, document classification, machine translation etc.
 
 ## Jupyter tutorials
 For those who like to use Jupyter Notebooks, ```src/jupyter_embeddings.ipynb``` instructs how to build your own word embeddings with just a few lines of code. ```scr/jypyter_explore_embeddings.ipynb``` guides how to make queries from embeddings.
@@ -39,6 +42,9 @@ Run script from the commmand line ```python3 make_embeddings.py corpusfile vecto
 
 ### Runtime performance
 On Intel i5-2400 3.10GHz using a corpus of 1M words and a window size of 3, takes ca. 35 seconds to make basic embeddings and 50 seconds to make CSW-embeddings. On 2.1GHz Xeon Gold 6230 the runtimes are ca. 6 and 10 seconds respectively. Although this is quite fast, testing hundreds or thousands of combinations using ```hypertune.py``` may take a while.
+
+### Presentations and publications
+This repository contains the up to date version of scripts used in Sahala 2019: _PMI+SVD and Semantic Domains in Akkadian Texts_ (a poster presented in HELSLANG summer conference).
 
 ### Version history
 - 2021-01-26 -- ```make_embeddings.py``` added pmi-variants.
