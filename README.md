@@ -43,15 +43,15 @@ Run script from the commmand line ```python3 make_embeddings.py corpusfile vecto
 ### Runtime performance
 On Intel i5-2400 3.10GHz using a corpus of 1M words and a window size of 3, takes ca. 35 seconds to make basic embeddings and 50 seconds to make CSW-embeddings. On 2.1GHz Xeon Gold 6230 the runtimes are ca. 6 and 10 seconds respectively. Although this is quite fast, testing hundreds or thousands of combinations using ```hypertune.py``` may take a while.
 
-### Presentations and publications
+## Presentations and publications
 This repository contains the up to date version of scripts used in Sahala 2019: _PMI+SVD and Semantic Domains in Akkadian Texts_ (a poster presented in HELSLANG summer conference).
 
-### Version history
+## Version history
 - 2021-01-26 -- ```make_embeddings.py``` added pmi-variants.
 - 2021-01-23 -- ```make_embeddings.py``` no longer saves null-vectors for words that occur in completely broken contexts (Gensim doesn't like them).
 - 2021-01-01 -- This is now the main tool for PMI-based word embeddings. ```Pmizer``` or ```Pmizer2``` word vectors are no longer developed.
 
-### TODO:
+## TODO:
 - Add parsing directly from Oracc using Niek's script
 - PMI-delta
 - TF-IDF filtering
