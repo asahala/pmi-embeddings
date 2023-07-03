@@ -47,6 +47,7 @@ On Intel i5-2400 3.10GHz using a corpus of 1M words and a window size of 3, take
 This repository contains the up to date version of scripts used in Sahala 2019: _PMI+SVD and Semantic Domains in Akkadian Texts_ (a poster presented in HELSLANG summer conference).
 
 ## Version history
+- 2023-07-03 -- ```make_embeddings.py``` fixed shift type 1 formula.
 - 2021-01-26 -- ```make_embeddings.py``` added pmi-variants.
 - 2021-01-23 -- ```make_embeddings.py``` no longer saves null-vectors for words that occur in completely broken contexts (Gensim doesn't like them).
 - 2021-01-01 -- This is now the main tool for PMI-based word embeddings. ```Pmizer``` or ```Pmizer2``` word vectors are no longer developed.
