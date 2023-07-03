@@ -47,6 +47,8 @@ DIV = "> " + "--" * 24
   + Context Distribution Smoothing (CDS) (Levy et al. 2015)
   + Eigenvalue weighting                 (Caron 2001)
   + Window scaling                       (Church & Hanks 1990)
+  + NPMI                                 (Bouma 2009)
+  + PMI^2                                (Daille 1994)
   
  Input format:
    Lemmatized text one word per line. Use symbol ´#´ to set window
@@ -67,6 +69,7 @@ DIV = "> " + "--" * 24
    2021-01-26       Add PMI^2 and NPMI
    2021-01-23       Filter non-zero vectors to pacify Gensim warnings.
    2021-01-20       Add dirty stop words
+   2023-06-29       Change PMI shift formula *= --> -= and avoid log2(0)
 
 *´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`* """ 
 
@@ -545,16 +548,18 @@ class Cooc:
         :param shift_type               set PMI shift type
                                           0: Jungmaier et al. 2020
                                           1: Levy & Goldberg 2014
-                                          2: Experimental: linear addition
+                                          2: Experimental: My old def of L&G???
+                                          3: Experimental: linear addition
         :param variant                  set PMI variant
 
         :type lambda_                   float (recommended: 0.0001)
         :type alpha                     float (recommended: 0.75)
         :type threshold                 integer (useful values: 0-10)
         :type shift_type                integer (0, 1, 2)
-                                          0: if PMI(a,b) < -k, PMI(a,b) = 0
+                                          0: PMI(a,b) < -k = 0
                                           1: max(PMI(a,b) - log2(k), 0)
-                                          2: max(PMI(a,b) + k, 0)
+                                          2: max(PMI(a,b) * log2(k), 0)
+                                          3: max(PMI(a,b) + k, 0)
         :type variant                   str (pmi2, npmi)
 
         For PMI(*,*) it is more efficient to calculate the scores using
@@ -635,9 +640,12 @@ class Cooc:
             if shift_type == 0:
                 self.pmi.data[self.pmi.data < -threshold] = 0
             elif shift_type == 1:
-                self.pmi.data *= np.log2(threshold)
+                self.pmi.data -= np.log2(min(threshold, 1))
                 self.pmi.data[self.pmi.data < 0] = 0
             elif shift_type == 2:
+                self.pmi.data *= np.log2(max(threshold, 2))
+                self.pmi.data[self.pmi.data < 0] = 0                                
+            elif shift_type == 3:
                 self.pmi.data += threshold
                 self.pmi.data[self.pmi.data < 0] = 0
     
