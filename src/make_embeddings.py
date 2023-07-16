@@ -16,7 +16,7 @@ from sklearn.utils.extmath import randomized_svd
 from sklearn.decomposition import TruncatedSVD
 from sklearn.preprocessing import normalize
 
-__version__ = "2021-01-26"
+__version__ = "2023-07-16"
 
 # Globals. All meta-symbols must have a string and integer form.
 # Integers must be negative! 
@@ -32,7 +32,7 @@ DIV = "> " + "--" * 24
 
 """ *´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*
 
- Word embeddings for cuneiform languages                           asahala 2020
+ Word embeddings for cuneiform languages                   asahala 2020, 2023
 
  This script combines findings in several PMI+SVD and related research papers 
  to test their applicability in fragmentary and repetitive low-resource 
@@ -70,12 +70,15 @@ DIV = "> " + "--" * 24
    2021-01-23       Filter non-zero vectors to pacify Gensim warnings.
    2021-01-20       Add dirty stop words
    2023-06-29       Change PMI shift formula *= --> -= and avoid log2(0)
+   2023-07-16       Add note about order of operations on lambda and alpha
 
 *´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`*.*´`* """ 
 
 def get_size(obj, seen=None):
     """ Recursively finds size of objects
-        copied from: https://stackoverflow.com/questions/449560/ """
+        copied from: https://stackoverflow.com/questions/449560/ 
+
+    This is only used for debugging CSW memory use """
 
     size = sys.getsizeof(obj)
     if seen is None:
@@ -571,6 +574,10 @@ class Cooc:
         PMI(a,b) = log2 --------   =  log2 ( N * f(a,b) * -------- )
                         p(a)p(b)                          f(a)f(b)    
 
+        With lambda smoothing all factors are smoothed. With CSW
+        f(a,b) and N are modified and with alpha smoothing f(b) and N
+        are modified.
+
         """
 
         st = time.time()
@@ -584,7 +591,13 @@ class Cooc:
            Jacob Jungmaier (Accessed: 2020-12-01):
               https://github.com/jungmaier/dirichlet-smoothed-word-embeddings/
            Omer Levy (Accessed: 2019-05-30)
-              https://bitbucket.org/omerlevy/hyperwords/ """
+              https://bitbucket.org/omerlevy/hyperwords/
+
+        It seems that the lambda smoothing is better to do before
+        alpha, although the amount of lambda get reduced. 
+
+        In current order the performance is slightly better. """
+                                                        
         if lambda_ is not None:
             if self.verbose:
                 print("> Dirichlet smoothing λ={}".format(lambda_))
@@ -599,6 +612,7 @@ class Cooc:
                 print("> Context distribution smoothing α={}".format(alpha))
             sum_b = sum_b ** alpha
 
+        """ Note that the total count is adjusted by alpha, lambda and csw. """
         sum_total = sum_b.sum()
         self.pmi = csr_matrix(self.cooc_matrix)
         
@@ -638,12 +652,12 @@ class Cooc:
         """ Apply threshold for Shifted PMI. """
         if threshold is not None:
             if shift_type == 0:
-                self.pmi.data[self.pmi.data < -threshold] = 0
+                self.pmi.data[self.pmi.data < -threshold] = 0                
             elif shift_type == 1:
-                self.pmi.data -= np.log2(min(threshold, 1))
+                self.pmi.data -= np.log2(max(threshold, 1))
                 self.pmi.data[self.pmi.data < 0] = 0
             elif shift_type == 2:
-                self.pmi.data *= np.log2(max(threshold, 2))
+                self.pmi.data *= np.log2(max(threshold, 1))
                 self.pmi.data[self.pmi.data < 0] = 0                                
             elif shift_type == 3:
                 self.pmi.data += threshold
@@ -664,7 +678,7 @@ class Cooc:
         
         st = time.time()
 
-        # Do not modify pmi_matrix directly
+        ## Do not modify pmi_matrix directly
         matrix = self.pmi_matrix
 
         if self.verbose:
