@@ -10,3 +10,6 @@ word
 per
 line
 .
+
+
+You should use NLTK tokenizer to tokenize the data (from nltk import word_tokenize). The lemmatizer wants dog's as two tokens "dog" and "s" etc. This is what NLTK tokenizer does.
