@@ -38,10 +38,17 @@ def lemmatize_data(text):
     return d
 
 
-def lemmatize_large_data(text):
+def lemmatize_large_data(text, tokens_per_cycle=50000, output_size=2000000):
     """ Lemmatize untokenized text using NLTK
+
     :param text      input text
-    :type text       stt """
+    :type text       stt
+
+    Because NLTK is slow for large data sets, this will lemmatize
+    50000 tokens at a time and write the output in files of 2 million
+    tokens each that can be catenated later.
+
+    """
 
     #d = []
     #itot = len(word_tokenize(text))
@@ -52,7 +59,7 @@ def lemmatize_large_data(text):
     for e, w in enumerate(text, start=1):
 
         chunk.append(w)
-        if e % 50000 == 0:
+        if e % tokens_per_cycle == 0:
             with open(f'chunks/enwik9-2M-{str(part).zfill(3)}.txt', 'a', encoding='utf-8') as output:
                 print(f'Processing chunk {e}')
                 for word, tag in pos_tag(chunk):
@@ -67,7 +74,7 @@ def lemmatize_large_data(text):
                 chunk = []
                 #output.write('#' + '\n')
 
-        if e % 2000000 == 0:
+        if e % output_size == 0:
             #output.write('<EOF>\n')
             part += 1
             
