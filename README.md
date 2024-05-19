@@ -16,6 +16,8 @@ For those who like to use Jupyter Notebooks, ```src/jupyter_embeddings.ipynb``` 
 
 For setting up Jupyter environment, please read [this guide](https://github.com/niekveldhuis/compass/blob/master/1_Preliminaries/install_packages.ipynb) by Niek Veldhuis. Note that you only need the packages listed below (of which most are likely preinstalled in Conda/Jypyter).
 
+(NOTE! AFTER THE RECENT GENSIM UPDATE EXPLORE_EMBEDDINGS DOESN'T WORK! The word vectors are fine and can be used with any other script, though.)
+
 ## Requirements
 ```Python 3.6``` or newer, [numpy](https://numpy.org/), [scipy](https://www.scipy.org/) and [sklearn](https://scikit-learn.org/stable/). For evaluation scripts you will also need [gensim](https://pypi.org/project/gensim/).
 
