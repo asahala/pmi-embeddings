@@ -46,7 +46,7 @@ Run script from the commmand line ```python3 make_embeddings.py corpusfile vecto
 On Intel i5-2400 3.10GHz using a corpus of 1M words and a window size of 3, takes ca. 35 seconds to make basic embeddings and 50 seconds to make CSW-embeddings. On 2.1GHz Xeon Gold 6230 the runtimes are ca. 6 and 10 seconds respectively. Although this is quite fast, testing hundreds or thousands of combinations using ```hypertune.py``` may take a while.
 
 ## Cite
-Sahala, Aleksi, Baragli, Beatrix, Lentini, Giulia, & Tushingham, Poppy (2024). [Towards a word similarity gold standard for Akkadian: creation and model optimization](https://doi.org/10.1515/itit-2023-0065). IT - Information Technology. 
+Sahala, Aleksi; Baragli, Beatrix; Lentini, Giulia & Tushingham, Poppy (2024). [Towards a word similarity gold standard for Akkadian: creation and model optimization](https://doi.org/10.1515/itit-2023-0065). IT - Information Technology. 
 
 ## Version history
 - 2023-07-03 -- ```make_embeddings.py``` fixed shift type 1 formula.
